@@ -1,5 +1,7 @@
 # 🧩 MCP Studio
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-zybit.top-6366f1?style=flat-square)](https://zybit.top/mcp-studio/)
+
 <p>
   <strong>浏览、安装、配置 MCP 服务器，一键生成任意 AI 客户端的配置</strong>
   ·
