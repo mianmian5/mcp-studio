@@ -49,6 +49,35 @@ const CLIENTS = [
   { id: 'generic', name: 'Generic JSON', icon: '📋', configPath: 'mcp-config.json' },
 ];
 
+// ── MCP install command lookup (known servers) ─
+const KNOWN_INSTALLS: Record<string, { cmd: string; args: string[] }> = {
+  'n8n': { cmd: 'npx', args: ['-y', '@n8n/n8n-mcp-server'] },
+  'playwright': { cmd: 'npx', args: ['-y', '@playwright/mcp'] },
+  'puppeteer': { cmd: 'npx', args: ['-y', '@puppeteer/mcp'] },
+  'browserbase': { cmd: 'npx', args: ['-y', '@browserbase/mcp'] },
+  'sequential-thinking': { cmd: 'npx', args: ['-y', '@modelcontextprotocol/sequential-thinking'] },
+  'github': { cmd: 'npx', args: ['-y', '@modelcontextprotocol/github'] },
+  'slack': { cmd: 'npx', args: ['-y', '@modelcontextprotocol/slack'] },
+  'filesystem': { cmd: 'npx', args: ['-y', '@modelcontextprotocol/filesystem'] },
+  'brave-search': { cmd: 'npx', args: ['-y', '@anthropic-ai/mcp-server-brave-search'] },
+  'fetch': { cmd: 'npx', args: ['-y', '@anthropic-ai/mcp-server-fetch'] },
+  'memory': { cmd: 'npx', args: ['-y', '@anthropic-ai/mcp-server-memory'] },
+  'mcp-servers': { cmd: 'npx', args: ['-y', '@anthropic-ai/mcp-server-mcp-servers'] },
+};
+
+function getInstallCmd(server: Server): { cmd: string; args: string[] } {
+  // 先查已知列表
+  if (KNOWN_INSTALLS[server.name]) return KNOWN_INSTALLS[server.name];
+
+  // 按语言猜测
+  const lang = (server.language || '').toLowerCase();
+  if (lang === 'python') return { cmd: 'uvx', args: ['-y', server.name] };
+  if (lang === 'go') return { cmd: 'go', args: ['run', 'github.com/' + server.id] };
+  if (lang === 'rust') return { cmd: 'cargo', args: ['install', server.name] };
+  // 默认 npx
+  return { cmd: 'npx', args: ['-y', server.name] };
+}
+
 export default function Home() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
@@ -59,8 +88,17 @@ export default function Home() {
   const [dark, setDark] = useState(false);
   const [sortBy, setSortBy] = useState<'stars' | 'updated' | 'name'>('stars');
 
-  // Toggle dark mode
+  // Dark mode with localStorage persistence
   useEffect(() => {
+    const saved = localStorage.getItem('mcp-studio-dark');
+    if (saved === 'true') {
+      setDark(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('mcp-studio-dark', String(dark));
     if (dark) document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
   }, [dark]);
@@ -93,22 +131,34 @@ export default function Home() {
     setCopied(false);
   }, []);
 
-  // Generate config JSON
+  // Generate config JSON per client format
   const generateConfig = useCallback(() => {
     if (!selectedServer) return '';
     const envObj: Record<string, string> = {};
     envVars.filter(e => e.key.trim()).forEach(e => { envObj[e.key.trim()] = e.value.trim(); });
-    const config: Record<string, any> = {};
-    config[selectedServer.name] = {
-      command: selectedServer.language?.toLowerCase() === 'python' ? 'uvx' :
-               selectedServer.language?.toLowerCase() === 'go' ? 'go run' : 'npx',
-      args: selectedServer.language?.toLowerCase() === 'python'
-        ? ['-y', selectedServer.name]
-        : ['-y', `@modelcontextprotocol/${selectedServer.name}`],
+
+    const install = getInstallCmd(selectedServer);
+    const serverEntry: Record<string, any> = {
+      command: install.cmd,
+      args: install.args,
     };
-    if (Object.keys(envObj).length > 0) config[selectedServer.name].env = envObj;
+    if (Object.keys(envObj).length > 0) serverEntry.env = envObj;
+
+    let config: any;
+    switch (selectedClient) {
+      case 'openclaw':
+        config = { 'mcpServers': { [selectedServer.name]: serverEntry } };
+        break;
+      case 'cline':
+        config = { 'mcpServers': { [selectedServer.name]: serverEntry } };
+        break;
+      default:
+        // claude, cursor, windsurf, generic all use stdio format
+        config = { 'mcpServers': { [selectedServer.name]: serverEntry } };
+    }
+
     return JSON.stringify(config, null, 2);
-  }, [selectedServer, envVars]);
+  }, [selectedServer, envVars, selectedClient]);
 
   // Copy to clipboard
   const copyToClipboard = async () => {
@@ -401,13 +451,36 @@ export default function Home() {
 
             {/* Config output */}
             <div className="mb-4">
-              <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                Generated Config
-              </label>
-              <pre className="rounded-xl p-3 text-xs overflow-x-auto font-mono leading-relaxed"
-                style={{ background: 'var(--surface-2)', color: 'var(--text)' }}>
-                {generateConfig()}
-              </pre>
+              {/* Terminal install command */}
+              <div className="mb-3">
+                <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                  Quick Install
+                </label>
+                <div className="flex gap-2 items-center">
+                  <code className="flex-1 rounded-xl px-3 py-2 text-xs font-mono"
+                    style={{ background: 'var(--surface-2)', color: 'var(--accent)' }}>
+                    {getInstallCmd(selectedServer).cmd} {getInstallCmd(selectedServer).args.join(' ')}
+                  </code>
+                  <button onClick={() => {
+                    const cmd = getInstallCmd(selectedServer).cmd + ' ' + getInstallCmd(selectedServer).args.join(' ');
+                    navigator.clipboard.writeText(cmd);
+                  }}
+                    className="px-2.5 py-2 rounded-lg text-xs cursor-pointer"
+                    style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                    📋
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                  Config JSON <span className="font-normal">(paste into your AI client)</span>
+                </label>
+                <pre className="rounded-xl p-3 text-xs overflow-x-auto font-mono leading-relaxed"
+                  style={{ background: 'var(--surface-2)', color: 'var(--text)' }}>
+                  {generateConfig()}
+                </pre>
+              </div>
             </div>
 
             {/* Actions */}
