@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧩 MCP Studio
 
-## Getting Started
+> **Browse, install, and configure MCP servers for any AI client.**
+>
+> One click to generate the config you need. No more manually editing JSON files.
 
-First, run the development server:
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)]()
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| **🔍 Browse** | Search and filter **1,722** MCP servers by category, language, stars |
+| **⚡ One-click Install** | Click any server → configure env vars → get ready-to-use config |
+| **🤖 Multi-client** | Supports **Claude Desktop, Cursor, Windsurf, OpenClaw, Cline** |
+| **🔑 Env Vars** | GUI for setting environment variables, no manual editing |
+| **📋 Copy & Download** | Copy config to clipboard or download as JSON file |
+| **🌙 Dark Mode** | Toggle between light and dark themes |
+
+---
+
+## 🚀 Demo
+
+![MCP Studio](screenshot.jpg)
+
+*Search servers, click Install, configure env vars, copy config. Done.*
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 16 + TypeScript
+- **Styling:** Tailwind CSS v4
+- **Data:** 1,722 MCP servers indexed from GitHub
+
+---
+
+## 🏃 Quick Start
 
 ```bash
+git clone https://github.com/mianmian5/mcp-studio.git
+cd mcp-studio
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🤝 Why MCP Studio?
 
-## Learn More
+MCP (Model Context Protocol) is becoming the standard for AI agents to interact with tools. But setting up MCP servers is a pain:
 
-To learn more about Next.js, take a look at the following resources:
+- ❌ Manually editing JSON config files
+- ❌ Different formats for different AI clients
+- ❌ Forgetting to set environment variables
+- ❌ Hard to discover what's available
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**MCP Studio fixes all of that.** One UI to browse, install, and configure everything.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📸 Screenshots
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+![Server grid](screenshot.jpg)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Browse servers with search, filter, and sort*
+
+---
+
+## 📜 License
+
+MIT
